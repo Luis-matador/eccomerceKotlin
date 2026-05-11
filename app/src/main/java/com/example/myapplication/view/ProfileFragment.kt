@@ -9,29 +9,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.Spinner
-import android.widget.Switch
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import com.example.myapplication.MainActivity
 import com.example.myapplication.R
+import com.example.myapplication.databinding.DialogProductFormBinding
+import com.example.myapplication.databinding.FragmentProfileBinding
 import com.example.myapplication.model.Product
 import com.example.myapplication.util.loadStoreImage
 import com.example.myapplication.util.showIf
 
 class ProfileFragment : Fragment() {
 
-    private lateinit var ivProfile: ImageView
-    private lateinit var tvName: TextView
-    private lateinit var tvEmail: TextView
-    private lateinit var tvRole: TextView
-    private lateinit var adminPanel: View
-    private lateinit var spinnerProducts: Spinner
+    private var _binding: FragmentProfileBinding? = null
+    private val binding get() = _binding!!
     private var onImageSelected: ((String?) -> Unit)? = null
 
     private val profileImagePicker = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -54,32 +46,29 @@ class ProfileFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View = inflater.inflate(R.layout.fragment_profile, container, false)
+    ): View {
+        _binding = FragmentProfileBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        ivProfile = view.findViewById(R.id.ivProfile)
-        tvName = view.findViewById(R.id.tvProfileName)
-        tvEmail = view.findViewById(R.id.tvProfileEmail)
-        tvRole = view.findViewById(R.id.tvProfileRole)
-        adminPanel = view.findViewById(R.id.layoutAdminPanel)
-        spinnerProducts = view.findViewById(R.id.spinnerAdminProducts)
 
-        view.findViewById<Button>(R.id.btnChangeProfilePhoto).setOnClickListener {
+        binding.btnChangeProfilePhoto.setOnClickListener {
             profileImagePicker.launch(arrayOf("image/*"))
         }
-        view.findViewById<Button>(R.id.btnCreateProduct).setOnClickListener {
+        binding.btnCreateProduct.setOnClickListener {
             showProductDialog(null)
         }
-        view.findViewById<Button>(R.id.btnEditProduct).setOnClickListener {
-            val product = getAdminProducts().getOrNull(spinnerProducts.selectedItemPosition)
+        binding.btnEditProduct.setOnClickListener {
+            val product = getAdminProducts().getOrNull(binding.spinnerAdminProducts.selectedItemPosition)
             if (product == null) {
                 Toast.makeText(requireContext(), R.string.no_products_available, Toast.LENGTH_SHORT).show()
             } else {
                 showProductDialog(product)
             }
         }
-        view.findViewById<Button>(R.id.btnLogout).setOnClickListener {
+        binding.btnLogout.setOnClickListener {
             (requireActivity() as MainActivity).logout()
         }
 
@@ -92,16 +81,21 @@ class ProfileFragment : Fragment() {
         bindProfile()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     private fun bindProfile() {
         val user = controller().getCurrentUser()
-        ivProfile.loadStoreImage(user.photoUri, profile = true)
-        tvName.text = user.name
-        tvEmail.text = user.email
-        tvRole.text = getString(R.string.role_format, user.role)
-        adminPanel.showIf(user.role == "admin")
+        binding.ivProfile.loadStoreImage(user.photoUri, profile = true)
+        binding.tvProfileName.text = user.name
+        binding.tvProfileEmail.text = user.email
+        binding.tvProfileRole.text = getString(R.string.role_format, user.role)
+        binding.layoutAdminPanel.showIf(user.role == "admin")
         if (user.role == "admin") {
             val titles = getAdminProducts().map { it.title }
-            spinnerProducts.adapter = ArrayAdapter(
+            binding.spinnerAdminProducts.adapter = ArrayAdapter(
                 requireContext(),
                 android.R.layout.simple_spinner_dropdown_item,
                 if (titles.isEmpty()) listOf(getString(R.string.no_products_available)) else titles,
@@ -114,50 +108,41 @@ class ProfileFragment : Fragment() {
     private fun controller() = (requireActivity() as MainActivity).storeController
 
     private fun showProductDialog(existing: Product?) {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_product_form, null)
-        val etTitle = dialogView.findViewById<EditText>(R.id.etProductTitle)
-        val etPlatform = dialogView.findViewById<EditText>(R.id.etProductPlatform)
-        val etCategory = dialogView.findViewById<EditText>(R.id.etProductCategory)
-        val etPrice = dialogView.findViewById<EditText>(R.id.etProductPrice)
-        val etStock = dialogView.findViewById<EditText>(R.id.etProductStock)
-        val etDescription = dialogView.findViewById<EditText>(R.id.etProductDescription)
-        val ivPreview = dialogView.findViewById<ImageView>(R.id.ivProductPreview)
-        val switchFeatured = dialogView.findViewById<Switch>(R.id.switchFeatured)
-        val btnPick = dialogView.findViewById<Button>(R.id.btnPickProductImage)
+        val dialogBinding = DialogProductFormBinding.inflate(layoutInflater)
 
         var selectedImageUri: String? = existing?.imageUri
-        etTitle.setText(existing?.title.orEmpty())
-        etPlatform.setText(existing?.platform.orEmpty())
-        etCategory.setText(existing?.category.orEmpty())
-        etPrice.setText(existing?.price?.toString().orEmpty())
-        etStock.setText(existing?.stock?.toString().orEmpty())
-        etDescription.setText(existing?.description.orEmpty())
-        switchFeatured.isChecked = existing?.featured == true
-        ivPreview.loadStoreImage(selectedImageUri)
+        dialogBinding.etProductTitle.setText(existing?.title.orEmpty())
+        dialogBinding.etProductPlatform.setText(existing?.platform.orEmpty())
+        dialogBinding.etProductCategory.setText(existing?.category.orEmpty())
+        dialogBinding.etProductPrice.setText(existing?.price?.toString().orEmpty())
+        dialogBinding.etProductStock.setText(existing?.stock?.toString().orEmpty())
+        dialogBinding.etProductDescription.setText(existing?.description.orEmpty())
+        dialogBinding.switchFeatured.isChecked = existing?.featured == true
+        dialogBinding.ivProductPreview.loadStoreImage(selectedImageUri)
 
-        btnPick.setOnClickListener {
+        dialogBinding.btnPickProductImage.setOnClickListener {
             onImageSelected = { uriString ->
                 selectedImageUri = uriString
-                ivPreview.loadStoreImage(uriString)
+                dialogBinding.ivProductPreview.loadStoreImage(uriString)
             }
             productImagePicker.launch(arrayOf("image/*"))
         }
 
         AlertDialog.Builder(requireContext())
             .setTitle(if (existing == null) R.string.create_product else R.string.edit_product)
-            .setView(dialogView)
+            .setView(dialogBinding.root)
             .setNegativeButton(android.R.string.cancel, null)
             .setPositiveButton(R.string.save, null)
             .create()
             .also { dialog ->
                 dialog.setOnShowListener {
                     dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                        val title = etTitle.text.toString().trim()
-                        val platform = etPlatform.text.toString().trim()
-                        val category = etCategory.text.toString().trim()
-                        val description = etDescription.text.toString().trim()
-                        val price = etPrice.text.toString().trim().toDoubleOrNull()
-                        val stock = etStock.text.toString().trim().toIntOrNull()
+                        val title = dialogBinding.etProductTitle.text.toString().trim()
+                        val platform = dialogBinding.etProductPlatform.text.toString().trim()
+                        val category = dialogBinding.etProductCategory.text.toString().trim()
+                        val description = dialogBinding.etProductDescription.text.toString().trim()
+                        val price = dialogBinding.etProductPrice.text.toString().trim().toDoubleOrNull()
+                        val stock = dialogBinding.etProductStock.text.toString().trim().toIntOrNull()
 
                         if (title.isBlank() || platform.isBlank() || category.isBlank() || description.isBlank() || price == null || stock == null) {
                             Toast.makeText(requireContext(), R.string.complete_product_form, Toast.LENGTH_SHORT).show()
@@ -174,7 +159,7 @@ class ProfileFragment : Fragment() {
                                 price = price,
                                 stock = stock,
                                 imageUri = selectedImageUri,
-                                featured = switchFeatured.isChecked,
+                                featured = dialogBinding.switchFeatured.isChecked,
                             ),
                         )
                         bindProfile()

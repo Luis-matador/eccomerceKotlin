@@ -16,6 +16,10 @@
     <string name="catalog_header_user">Busca ofertas, filtra por categoría y guarda favoritos como en un marketplace tipo G2A.</string>
     <string name="catalog_search_hint">Buscar juegos, plataformas o categorías</string>
     <string name="favorites_switch">Solo favoritos</string>
+    <string name="sort_relevance">Ordenar: relevancia</string>
+    <string name="sort_price_asc">Precio: menor a mayor</string>
+    <string name="sort_price_desc">Precio: mayor a menor</string>
+    <string name="sort_popularity">Popularidad</string>
     <string name="featured_section_title">Destacados de hoy</string>
     <string name="empty_catalog">No hay productos que coincidan con esos filtros.</string>
     <string name="empty_favorites">Todavía no tienes favoritos. Marca productos con el corazón para guardarlos.</string>
@@ -54,6 +58,11 @@
 
     <string name="empty_orders">Todavía no has comprado nada con esta cuenta.</string>
     <string name="orders_title">Historial de pedidos</string>
+    <string name="order_detail_title">Detalle del pedido</string>
+    <string name="order_not_found">Pedido no encontrado</string>
+    <string name="order_detail_buyer_format">Comprador: %1$s · %2$s</string>
+    <string name="order_detail_item_meta">%1$s · Cantidad: %2$d</string>
+    <string name="order_detail_empty">Este pedido no tiene items asociados.</string>
     <string name="order_number_format">Pedido #%1$d</string>
     <string name="order_meta_format">%1$s · %2$s · %3$s</string>
 

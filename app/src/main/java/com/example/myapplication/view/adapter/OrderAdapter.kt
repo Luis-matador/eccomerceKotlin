@@ -4,14 +4,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.R
 import com.example.myapplication.model.OrderWithItems
 import com.example.myapplication.util.toEuroString
 
 class OrderAdapter(
-    private var items: List<OrderWithItems>,
-) : RecyclerView.Adapter<OrderAdapter.OrderViewHolder>() {
+    private val onOpen: (OrderWithItems) -> Unit,
+) : ListAdapter<OrderWithItems, OrderAdapter.OrderViewHolder>(DiffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrderViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_order, parent, false)
@@ -19,14 +21,7 @@ class OrderAdapter(
     }
 
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
-        holder.bind(items[position])
-    }
-
-    override fun getItemCount(): Int = items.size
-
-    fun update(newItems: List<OrderWithItems>) {
-        items = newItems
-        notifyDataSetChanged()
+        holder.bind(getItem(position))
     }
 
     inner class OrderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -47,13 +42,22 @@ class OrderAdapter(
                 R.string.total_format,
                 orderWithItems.order.total.toEuroString(),
             )
-            itemsText.text = orderWithItems.items.joinToString("\n\n") { item ->
-                buildString {
-                    append("• ${item.title} (${item.platform}) x${item.quantity}\n")
-                    append("Claves:\n${item.generatedKeys}")
-                }
-            }
+            itemsText.text = itemView.context.resources.getQuantityString(
+                R.plurals.order_items_count,
+                orderWithItems.items.size,
+                orderWithItems.items.size,
+            )
+            itemView.setOnClickListener { onOpen(orderWithItems) }
+        }
+    }
+
+    private companion object {
+        val DiffCallback = object : DiffUtil.ItemCallback<OrderWithItems>() {
+            override fun areItemsTheSame(oldItem: OrderWithItems, newItem: OrderWithItems): Boolean =
+                oldItem.order.id == newItem.order.id
+
+            override fun areContentsTheSame(oldItem: OrderWithItems, newItem: OrderWithItems): Boolean =
+                oldItem == newItem
         }
     }
 }
-

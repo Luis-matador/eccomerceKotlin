@@ -4,35 +4,36 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.MainActivity
 import com.example.myapplication.R
+import com.example.myapplication.databinding.FragmentOrdersBinding
 import com.example.myapplication.util.showIf
 import com.example.myapplication.view.adapter.OrderAdapter
 
 class OrdersFragment : Fragment() {
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var emptyView: TextView
+    private var _binding: FragmentOrdersBinding? = null
+    private val binding get() = _binding!!
     private lateinit var adapter: OrderAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View = inflater.inflate(R.layout.fragment_orders, container, false)
+    ): View {
+        _binding = FragmentOrdersBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        recyclerView = view.findViewById(R.id.recyclerOrders)
-        emptyView = view.findViewById(R.id.tvEmptyOrders)
-
-        adapter = OrderAdapter(emptyList())
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.adapter = adapter
+        adapter = OrderAdapter { order ->
+            (requireActivity() as MainActivity).openOrderDetail(order.order.id)
+        }
+        binding.recyclerOrders.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerOrders.adapter = adapter
         renderOrders()
     }
 
@@ -42,15 +43,19 @@ class OrdersFragment : Fragment() {
         if (this::adapter.isInitialized) renderOrders()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     private fun renderOrders() {
         val orders = (requireActivity() as MainActivity).storeController.getOrders()
-        adapter.update(orders)
-        emptyView.showIf(orders.isEmpty())
-        recyclerView.showIf(orders.isNotEmpty())
+        adapter.submitList(orders)
+        binding.tvEmptyOrders.showIf(orders.isEmpty())
+        binding.recyclerOrders.showIf(orders.isNotEmpty())
     }
 
     companion object {
         fun newInstance() = OrdersFragment()
     }
 }
-

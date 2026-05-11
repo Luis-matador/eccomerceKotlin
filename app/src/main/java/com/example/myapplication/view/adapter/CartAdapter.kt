@@ -6,6 +6,8 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.R
 import com.example.myapplication.model.CartLine
@@ -13,11 +15,10 @@ import com.example.myapplication.util.loadStoreImage
 import com.example.myapplication.util.toEuroString
 
 class CartAdapter(
-    private var items: List<CartLine>,
     private val onIncrease: (CartLine) -> Unit,
     private val onDecrease: (CartLine) -> Unit,
     private val onRemove: (CartLine) -> Unit,
-) : RecyclerView.Adapter<CartAdapter.CartViewHolder>() {
+) : ListAdapter<CartLine, CartAdapter.CartViewHolder>(DiffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CartViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_cart, parent, false)
@@ -25,14 +26,7 @@ class CartAdapter(
     }
 
     override fun onBindViewHolder(holder: CartViewHolder, position: Int) {
-        holder.bind(items[position])
-    }
-
-    override fun getItemCount(): Int = items.size
-
-    fun update(newItems: List<CartLine>) {
-        items = newItems
-        notifyDataSetChanged()
+        holder.bind(getItem(position))
     }
 
     inner class CartViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -56,5 +50,14 @@ class CartAdapter(
             btnRemove.setOnClickListener { onRemove(line) }
         }
     }
-}
 
+    private companion object {
+        val DiffCallback = object : DiffUtil.ItemCallback<CartLine>() {
+            override fun areItemsTheSame(oldItem: CartLine, newItem: CartLine): Boolean =
+                oldItem.productId == newItem.productId
+
+            override fun areContentsTheSame(oldItem: CartLine, newItem: CartLine): Boolean =
+                oldItem == newItem
+        }
+    }
+}

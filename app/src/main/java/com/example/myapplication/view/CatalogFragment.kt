@@ -1,58 +1,50 @@
 package com.example.myapplication.view
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.EditText
-import android.widget.Spinner
-import android.widget.Switch
-import android.widget.TextView
 import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.MainActivity
 import com.example.myapplication.R
+import com.example.myapplication.databinding.FragmentCatalogBinding
+import com.example.myapplication.model.StoreSortOption
 import com.example.myapplication.util.showIf
 import com.example.myapplication.view.adapter.FeaturedProductAdapter
 import com.example.myapplication.view.adapter.ProductAdapter
 
 class CatalogFragment : Fragment() {
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var featuredRecycler: RecyclerView
-    private lateinit var emptyView: TextView
-    private lateinit var helperView: TextView
-    private lateinit var searchView: EditText
-    private lateinit var categorySpinner: Spinner
-    private lateinit var favoritesSwitch: Switch
+    private var _binding: FragmentCatalogBinding? = null
+    private val binding get() = _binding!!
     private lateinit var adapter: ProductAdapter
     private lateinit var featuredAdapter: FeaturedProductAdapter
+    private val handler = Handler(Looper.getMainLooper())
+    private var debounceRunnable: Runnable? = null
     private var selectedCategory: String = "Todas"
     private var searchText: String = ""
+    private var selectedSort: StoreSortOption = StoreSortOption.RELEVANCE
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View = inflater.inflate(R.layout.fragment_catalog, container, false)
+    ): View {
+        _binding = FragmentCatalogBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        recyclerView = view.findViewById(R.id.recyclerProducts)
-        featuredRecycler = view.findViewById(R.id.recyclerFeaturedProducts)
-        emptyView = view.findViewById(R.id.tvEmptyCatalog)
-        helperView = view.findViewById(R.id.tvCatalogHelper)
-        searchView = view.findViewById(R.id.etCatalogSearch)
-        categorySpinner = view.findViewById(R.id.spinnerCategory)
-        favoritesSwitch = view.findViewById(R.id.switchOnlyFavorites)
 
         adapter = ProductAdapter(
-            items = emptyList(),
             onOpen = { product -> (requireActivity() as MainActivity).openProductDetail(product.id) },
             onAdd = { product ->
                 Toast.makeText(requireContext(), controller().addToCart(product.id), Toast.LENGTH_SHORT).show()
@@ -70,7 +62,6 @@ class CatalogFragment : Fragment() {
         )
 
         featuredAdapter = FeaturedProductAdapter(
-            items = emptyList(),
             onOpen = { product -> (requireActivity() as MainActivity).openProductDetail(product.id) },
             onAdd = { product ->
                 Toast.makeText(requireContext(), controller().addToCart(product.id), Toast.LENGTH_SHORT).show()
@@ -82,10 +73,10 @@ class CatalogFragment : Fragment() {
             },
         )
 
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.adapter = adapter
-        featuredRecycler.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        featuredRecycler.adapter = featuredAdapter
+        binding.recyclerProducts.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerProducts.adapter = adapter
+        binding.recyclerFeaturedProducts.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        binding.recyclerFeaturedProducts.adapter = featuredAdapter
 
         setupFilters()
         renderCatalog()
@@ -97,14 +88,20 @@ class CatalogFragment : Fragment() {
         if (this::adapter.isInitialized) renderCatalog()
     }
 
+    override fun onDestroyView() {
+        debounceRunnable?.let(handler::removeCallbacks)
+        super.onDestroyView()
+        _binding = null
+    }
+
     private fun setupFilters() {
         val categories = controller().getCategories()
-        categorySpinner.adapter = ArrayAdapter(
+        binding.spinnerCategory.adapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_spinner_dropdown_item,
             categories,
         )
-        categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        binding.spinnerCategory.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 selectedCategory = categories[position]
                 renderCatalog()
@@ -112,28 +109,56 @@ class CatalogFragment : Fragment() {
 
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
         }
-        searchView.doAfterTextChanged {
-            searchText = it?.toString().orEmpty()
-            renderCatalog()
+
+        val sortLabels = listOf(
+            getString(R.string.sort_relevance),
+            getString(R.string.sort_price_asc),
+            getString(R.string.sort_price_desc),
+            getString(R.string.sort_popularity),
+        )
+        binding.spinnerSort.adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            sortLabels,
+        )
+        binding.spinnerSort.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                selectedSort = when (position) {
+                    1 -> StoreSortOption.PRICE_ASC
+                    2 -> StoreSortOption.PRICE_DESC
+                    3 -> StoreSortOption.POPULARITY
+                    else -> StoreSortOption.RELEVANCE
+                }
+                renderCatalog()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
         }
-        favoritesSwitch.setOnCheckedChangeListener { _, _ -> renderCatalog() }
+
+        binding.etCatalogSearch.doAfterTextChanged {
+            searchText = it?.toString().orEmpty()
+            debounceRunnable?.let(handler::removeCallbacks)
+            debounceRunnable = Runnable { renderCatalog() }
+            handler.postDelayed(debounceRunnable!!, 300)
+        }
+        binding.switchOnlyFavorites.setOnCheckedChangeListener { _, _ -> renderCatalog() }
     }
 
     private fun renderCatalog() {
-        val products = controller().getProducts(searchText, selectedCategory, favoritesSwitch.isChecked)
+        val products = controller().getProducts(searchText, selectedCategory, binding.switchOnlyFavorites.isChecked, selectedSort)
         val featuredProducts = controller().getFeaturedProducts()
-        adapter.update(products)
-        featuredAdapter.update(featuredProducts)
-        helperView.text = getString(
+        adapter.submitList(products)
+        featuredAdapter.submitList(featuredProducts)
+        binding.tvCatalogHelper.text = getString(
             if (controller().getCurrentUser().role == "admin") {
                 R.string.catalog_header_admin
             } else {
                 R.string.catalog_header_user
             },
         )
-        emptyView.showIf(products.isEmpty())
-        recyclerView.showIf(products.isNotEmpty())
-        featuredRecycler.showIf(featuredProducts.isNotEmpty())
+        binding.tvEmptyCatalog.showIf(products.isEmpty())
+        binding.recyclerProducts.showIf(products.isNotEmpty())
+        binding.recyclerFeaturedProducts.showIf(featuredProducts.isNotEmpty())
     }
 
     private fun controller() = (requireActivity() as MainActivity).storeController

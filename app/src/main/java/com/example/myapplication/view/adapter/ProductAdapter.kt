@@ -7,6 +7,8 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.R
 import com.example.myapplication.model.Product
@@ -15,11 +17,10 @@ import com.example.myapplication.util.showIf
 import com.example.myapplication.util.toEuroString
 
 class ProductAdapter(
-    private var items: List<Product>,
     private val onOpen: (Product) -> Unit,
     private val onAdd: (Product) -> Unit,
     private val onToggleFavorite: (Product) -> Unit,
-) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
+) : ListAdapter<Product, ProductAdapter.ProductViewHolder>(DiffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_product, parent, false)
@@ -27,14 +28,7 @@ class ProductAdapter(
     }
 
     override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
-        holder.bind(items[position])
-    }
-
-    override fun getItemCount(): Int = items.size
-
-    fun update(newItems: List<Product>) {
-        items = newItems
-        notifyDataSetChanged()
+        holder.bind(getItem(position))
     }
 
     inner class ProductViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -63,6 +57,16 @@ class ProductAdapter(
             addButton.setOnClickListener { onAdd(product) }
             favoriteButton.setOnClickListener { onToggleFavorite(product) }
             itemView.setOnClickListener { onOpen(product) }
+        }
+    }
+
+    private companion object {
+        val DiffCallback = object : DiffUtil.ItemCallback<Product>() {
+            override fun areItemsTheSame(oldItem: Product, newItem: Product): Boolean =
+                oldItem.id == newItem.id
+
+            override fun areContentsTheSame(oldItem: Product, newItem: Product): Boolean =
+                oldItem == newItem
         }
     }
 }

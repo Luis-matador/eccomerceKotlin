@@ -6,7 +6,8 @@ App Android en Kotlin con arquitectura MVC básica para simular un ecommerce de 
 
 - Catálogo de productos cargado desde SQLite
 - Login real con registro de usuarios en SQLite
-- Búsqueda por texto y filtros por categoría
+- Búsqueda con debounce por texto y filtros por categoría
+- Ordenación por relevancia, precio y popularidad
 - Lista de favoritos y marcado con corazón
 - Carrusel de productos destacados
 - Ficha de producto
@@ -14,18 +15,23 @@ App Android en Kotlin con arquitectura MVC básica para simular un ecommerce de 
 - Checkout simulado
 - Generación de claves digitales al comprar
 - Historial de pedidos
+- Pantalla de detalle de pedido con claves entregadas por producto
 - Subida de foto de perfil
 - Alta/edición de productos por parte del admin, incluyendo imagen
+- Persistencia con Room (sobre SQLite)
+- RecyclerView con DiffUtil
+- ViewBinding por fragment
 
 ## Arquitectura
 
-- **Modelo**: `Product`, `CartLine`, `Order`, `OrderItem`, `User`, `StoreDatabaseHelper`
-- **Vista**: fragments de auth, catálogo, favoritos, ficha, carrito, checkout, pedidos y perfil
+- **Modelo**: `Product`, `CartLine`, `Order`, `OrderItem`, `User`, `AuthResult`, `StoreSortOption`
+- **Vista**: fragments de auth, catálogo, favoritos, ficha, carrito, checkout, pedidos, detalle de pedido y perfil
 - **Controlador**: `StoreController`
+- **Persistencia**: `Room` mediante `StoreRepository`, `StoreDatabase` y `StoreDao`
 
 ## Base de datos
 
-La app usa SQLite mediante `StoreDatabaseHelper` y se inicializa con datos demo en el primer arranque.
+La app usa `Room` sobre SQLite y se inicializa con datos demo en el primer arranque.
 
 ## Ejecutar
 

@@ -4,42 +4,35 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.MainActivity
 import com.example.myapplication.R
+import com.example.myapplication.databinding.FragmentCartBinding
 import com.example.myapplication.util.showIf
 import com.example.myapplication.util.toEuroString
 import com.example.myapplication.view.adapter.CartAdapter
 
 class CartFragment : Fragment() {
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var emptyView: TextView
-    private lateinit var totalView: TextView
-    private lateinit var checkoutButton: Button
+    private var _binding: FragmentCartBinding? = null
+    private val binding get() = _binding!!
     private lateinit var adapter: CartAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View = inflater.inflate(R.layout.fragment_cart, container, false)
+    ): View {
+        _binding = FragmentCartBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        recyclerView = view.findViewById(R.id.recyclerCart)
-        emptyView = view.findViewById(R.id.tvEmptyCart)
-        totalView = view.findViewById(R.id.tvCartTotal)
-        checkoutButton = view.findViewById(R.id.btnCheckout)
-        val continueButton = view.findViewById<Button>(R.id.btnContinueShopping)
 
         adapter = CartAdapter(
-            items = emptyList(),
             onIncrease = { line ->
                 Toast.makeText(requireContext(), controller().increaseCartItem(line.productId), Toast.LENGTH_SHORT).show()
                 renderCart()
@@ -55,13 +48,13 @@ class CartFragment : Fragment() {
             },
         )
 
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.adapter = adapter
+        binding.recyclerCart.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerCart.adapter = adapter
 
-        continueButton.setOnClickListener {
+        binding.btnContinueShopping.setOnClickListener {
             (requireActivity() as MainActivity).findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNavigation).selectedItemId = R.id.nav_catalog
         }
-        checkoutButton.setOnClickListener {
+        binding.btnCheckout.setOnClickListener {
             (requireActivity() as MainActivity).openCheckout()
         }
         renderCart()
@@ -73,14 +66,19 @@ class CartFragment : Fragment() {
         if (this::adapter.isInitialized) renderCart()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     private fun renderCart() {
         val items = controller().getCart()
-        adapter.update(items)
+        adapter.submitList(items)
         val total = controller().getCartTotal()
-        totalView.text = getString(R.string.total_format, total.toEuroString())
-        emptyView.showIf(items.isEmpty())
-        recyclerView.showIf(items.isNotEmpty())
-        checkoutButton.isEnabled = items.isNotEmpty()
+        binding.tvCartTotal.text = getString(R.string.total_format, total.toEuroString())
+        binding.tvEmptyCart.showIf(items.isEmpty())
+        binding.recyclerCart.showIf(items.isNotEmpty())
+        binding.btnCheckout.isEnabled = items.isNotEmpty()
         (requireActivity() as MainActivity).refreshChrome(getString(R.string.menu_cart))
     }
 
@@ -90,4 +88,3 @@ class CartFragment : Fragment() {
         fun newInstance() = CartFragment()
     }
 }
-

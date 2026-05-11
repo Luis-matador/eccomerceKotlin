@@ -12,6 +12,7 @@ import com.example.myapplication.view.CartFragment
 import com.example.myapplication.view.CatalogFragment
 import com.example.myapplication.view.CheckoutFragment
 import com.example.myapplication.view.FavoritesFragment
+import com.example.myapplication.view.OrderDetailFragment
 import com.example.myapplication.view.OrdersFragment
 import com.example.myapplication.view.ProductDetailFragment
 import com.example.myapplication.view.ProfileFragment
@@ -107,6 +108,14 @@ class MainActivity : AppCompatActivity() {
             addToBackStack("checkout")
         }
         refreshChrome(getString(R.string.checkout_title))
+    }
+
+    fun openOrderDetail(orderId: Int) {
+        supportFragmentManager.commit {
+            replace(R.id.fragmentContainer, OrderDetailFragment.newInstance(orderId))
+            addToBackStack("order_detail")
+        }
+        refreshChrome(getString(R.string.order_detail_title))
     }
 
     fun navigateToOrdersAfterPurchase() {

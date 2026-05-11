@@ -1,16 +1,17 @@
 package com.example.myapplication.controller
 
 import android.content.Context
+import com.example.myapplication.data.StoreRepository
 import com.example.myapplication.model.AuthResult
 import com.example.myapplication.model.CartLine
 import com.example.myapplication.model.CheckoutResult
 import com.example.myapplication.model.OrderWithItems
 import com.example.myapplication.model.Product
-import com.example.myapplication.model.StoreDatabaseHelper
+import com.example.myapplication.model.StoreSortOption
 import com.example.myapplication.model.User
 
 class StoreController(context: Context) {
-    private val database = StoreDatabaseHelper(context.applicationContext)
+    private val database = StoreRepository.getInstance(context.applicationContext)
     private val prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     fun isLoggedIn(): Boolean = getCurrentUserOrNull() != null
@@ -47,13 +48,14 @@ class StoreController(context: Context) {
 
     fun getProducts(
         query: String = "",
-        category: String = StoreDatabaseHelper.ALL_CATEGORIES,
+        category: String = StoreRepository.ALL_CATEGORIES,
         favoritesOnly: Boolean = false,
-    ): List<Product> = database.getProducts(requireUserId(), query, category, favoritesOnly)
+        sortOption: StoreSortOption = StoreSortOption.RELEVANCE,
+    ): List<Product> = database.getProducts(requireUserId(), query, category, favoritesOnly, sortOption)
 
     fun getFeaturedProducts(): List<Product> = database.getFeaturedProducts(requireUserId())
 
-    fun getCategories(): List<String> = listOf(StoreDatabaseHelper.ALL_CATEGORIES) + database.getCategories()
+    fun getCategories(): List<String> = listOf(StoreRepository.ALL_CATEGORIES) + database.getCategories()
 
     fun getProduct(productId: Int): Product? = database.getProduct(productId, requireUserId())
 
@@ -103,6 +105,8 @@ class StoreController(context: Context) {
     ): CheckoutResult = database.checkout(requireUserId(), buyerName, buyerEmail, paymentMethod)
 
     fun getOrders(): List<OrderWithItems> = database.getOrders(requireUserId())
+
+    fun getOrder(orderId: Int): OrderWithItems? = database.getOrder(requireUserId(), orderId)
 
     private fun requireUserId(): Int = getCurrentUser().id
 

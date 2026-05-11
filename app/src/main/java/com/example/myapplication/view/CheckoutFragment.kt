@@ -5,53 +5,50 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Spinner
-import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.myapplication.MainActivity
 import com.example.myapplication.R
+import com.example.myapplication.databinding.FragmentCheckoutBinding
 import com.example.myapplication.util.toEuroString
 
 class CheckoutFragment : Fragment() {
+
+    private var _binding: FragmentCheckoutBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View = inflater.inflate(R.layout.fragment_checkout, container, false)
+    ): View {
+        _binding = FragmentCheckoutBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val controller = (requireActivity() as MainActivity).storeController
         val currentUser = controller.getCurrentUser()
 
-        val total = view.findViewById<TextView>(R.id.tvCheckoutTotal)
-        val email = view.findViewById<EditText>(R.id.etBuyerEmail)
-        val name = view.findViewById<EditText>(R.id.etBuyerName)
-        val paymentSpinner = view.findViewById<Spinner>(R.id.spinnerPaymentMethod)
-        val confirmButton = view.findViewById<Button>(R.id.btnConfirmPurchase)
-
-        total.text = getString(R.string.total_format, controller.getCartTotal().toEuroString())
-        email.setText(currentUser.email)
-        name.setText(currentUser.name)
+        binding.tvCheckoutTotal.text = getString(R.string.total_format, controller.getCartTotal().toEuroString())
+        binding.etBuyerEmail.setText(currentUser.email)
+        binding.etBuyerName.setText(currentUser.name)
 
         val methods = listOf("Tarjeta", "PayPal", "Bizum", "Saldo G2A")
-        paymentSpinner.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, methods)
+        binding.spinnerPaymentMethod.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, methods)
 
-        confirmButton.setOnClickListener {
-            val buyerName = name.text.toString().trim()
-            val buyerEmail = email.text.toString().trim()
-            val paymentMethod = paymentSpinner.selectedItem.toString()
+        binding.btnConfirmPurchase.setOnClickListener {
+            val buyerName = binding.etBuyerName.text.toString().trim()
+            val buyerEmail = binding.etBuyerEmail.text.toString().trim()
+            val paymentMethod = binding.spinnerPaymentMethod.selectedItem.toString()
 
             if (buyerName.isBlank()) {
-                name.error = getString(R.string.required_field)
+                binding.etBuyerName.error = getString(R.string.required_field)
                 return@setOnClickListener
             }
             if (!buyerEmail.contains("@")) {
-                email.error = getString(R.string.invalid_email)
+                binding.etBuyerEmail.error = getString(R.string.invalid_email)
                 return@setOnClickListener
             }
 
@@ -68,8 +65,12 @@ class CheckoutFragment : Fragment() {
         (requireActivity() as MainActivity).refreshChrome(getString(R.string.checkout_title))
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     companion object {
         fun newInstance() = CheckoutFragment()
     }
 }
-

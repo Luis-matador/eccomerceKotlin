@@ -4,59 +4,53 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.myapplication.MainActivity
 import com.example.myapplication.R
+import com.example.myapplication.databinding.FragmentAuthBinding
 
 class AuthFragment : Fragment() {
+
+    private var _binding: FragmentAuthBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View = inflater.inflate(R.layout.fragment_auth, container, false)
+    ): View {
+        _binding = FragmentAuthBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val activity = requireActivity() as MainActivity
         val controller = activity.storeController
 
-        val name = view.findViewById<EditText>(R.id.etAuthName)
-        val email = view.findViewById<EditText>(R.id.etAuthEmail)
-        val password = view.findViewById<EditText>(R.id.etAuthPassword)
-        val loginButton = view.findViewById<Button>(R.id.btnLogin)
-        val registerButton = view.findViewById<Button>(R.id.btnRegister)
-        val adminButton = view.findViewById<Button>(R.id.btnQuickAdmin)
-
-        loginButton.setOnClickListener {
+        binding.btnLogin.setOnClickListener {
             val result = controller.login(
-                email.text.toString().trim(),
-                password.text.toString(),
+                binding.etAuthEmail.text.toString().trim(),
+                binding.etAuthPassword.text.toString(),
             )
             Toast.makeText(requireContext(), result.message, Toast.LENGTH_SHORT).show()
-            if (result.success) {
-                activity.onAuthSuccess()
-            }
+            if (result.success) activity.onAuthSuccess()
         }
 
-        registerButton.setOnClickListener {
+        binding.btnRegister.setOnClickListener {
             val result = controller.register(
-                name.text.toString().trim(),
-                email.text.toString().trim(),
-                password.text.toString(),
+                binding.etAuthName.text.toString().trim(),
+                binding.etAuthEmail.text.toString().trim(),
+                binding.etAuthPassword.text.toString(),
             )
             Toast.makeText(requireContext(), result.message, Toast.LENGTH_SHORT).show()
-            if (result.success) {
-                activity.onAuthSuccess()
-            }
+            if (result.success) activity.onAuthSuccess()
         }
 
-        adminButton.setOnClickListener {
-            email.setText("admin@g2a.local")
-            password.setText("admin123")
+        binding.btnQuickAdmin.setOnClickListener {
+            binding.etAuthEmail.setText("admin@g2a.local")
+            binding.etAuthPassword.setText("admin123")
         }
     }
 
@@ -65,8 +59,12 @@ class AuthFragment : Fragment() {
         (requireActivity() as MainActivity).refreshChrome(getString(R.string.auth_title))
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     companion object {
         fun newInstance() = AuthFragment()
     }
 }
-
