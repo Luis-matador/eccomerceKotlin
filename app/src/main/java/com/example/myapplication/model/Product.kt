@@ -10,5 +10,6 @@ data class Product(
     val stock: Int,
     val imageUri: String? = null,
     val featured: Boolean = false,
+    val isFavorite: Boolean = false,
 )
 

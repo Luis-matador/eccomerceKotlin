@@ -1,6 +1,7 @@
 package com.example.myapplication.controller
 
 import android.content.Context
+import com.example.myapplication.model.AuthResult
 import com.example.myapplication.model.CartLine
 import com.example.myapplication.model.CheckoutResult
 import com.example.myapplication.model.OrderWithItems
@@ -12,40 +13,68 @@ class StoreController(context: Context) {
     private val database = StoreDatabaseHelper(context.applicationContext)
     private val prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    init {
-        ensureCurrentUser()
-    }
+    fun isLoggedIn(): Boolean = getCurrentUserOrNull() != null
 
-    fun getCurrentUser(): User {
-        ensureCurrentUser()
+    fun getCurrentUserOrNull(): User? {
         val id = prefs.getInt(KEY_CURRENT_USER_ID, -1)
-        return database.getUserById(id) ?: database.getUserByRole("user")!!
+        return if (id == -1) null else database.getUserById(id)
     }
 
-    fun switchRole(role: String): User {
-        val user = database.getUserByRole(role) ?: database.getUserByRole("user")!!
-        prefs.edit().putInt(KEY_CURRENT_USER_ID, user.id).apply()
-        return user
+    fun getCurrentUser(): User =
+        getCurrentUserOrNull() ?: error("No hay usuario autenticado")
+
+    fun login(email: String, password: String): AuthResult {
+        val user = database.login(email.trim().lowercase(), password)
+        return if (user != null) {
+            prefs.edit().putInt(KEY_CURRENT_USER_ID, user.id).apply()
+            AuthResult(true, "Bienvenido de nuevo", user)
+        } else {
+            AuthResult(false, "Correo o contraseña incorrectos")
+        }
     }
 
-    fun getProducts(): List<Product> = database.getProducts()
+    fun register(name: String, email: String, password: String): AuthResult {
+        val result = database.registerUser(name, email, password)
+        if (result.success && result.user != null) {
+            prefs.edit().putInt(KEY_CURRENT_USER_ID, result.user.id).apply()
+        }
+        return result
+    }
 
-    fun getProduct(productId: Int): Product? = database.getProduct(productId)
+    fun logout() {
+        prefs.edit().remove(KEY_CURRENT_USER_ID).apply()
+    }
+
+    fun getProducts(
+        query: String = "",
+        category: String = StoreDatabaseHelper.ALL_CATEGORIES,
+        favoritesOnly: Boolean = false,
+    ): List<Product> = database.getProducts(requireUserId(), query, category, favoritesOnly)
+
+    fun getFeaturedProducts(): List<Product> = database.getFeaturedProducts(requireUserId())
+
+    fun getCategories(): List<String> = listOf(StoreDatabaseHelper.ALL_CATEGORIES) + database.getCategories()
+
+    fun getProduct(productId: Int): Product? = database.getProduct(productId, requireUserId())
+
+    fun toggleFavorite(productId: Int): Boolean = database.toggleFavorite(requireUserId(), productId)
+
+    fun getFavoritesCount(): Int = database.getFavoritesCount(requireUserId())
 
     fun addCurrentUserPhoto(photoUri: String?) {
-        database.updateUserPhoto(getCurrentUser().id, photoUri)
+        database.updateUserPhoto(requireUserId(), photoUri)
     }
 
     fun saveProduct(product: Product): Product = database.saveProduct(product)
 
-    fun getCart(): List<CartLine> = database.getCartLines(getCurrentUser().id)
+    fun getCart(): List<CartLine> = database.getCartLines(requireUserId())
 
-    fun getCartCount(): Int = database.getCartItemCount(getCurrentUser().id)
+    fun getCartCount(): Int = database.getCartItemCount(requireUserId())
 
-    fun getCartTotal(): Double = database.getCartTotal(getCurrentUser().id)
+    fun getCartTotal(): Double = database.getCartTotal(requireUserId())
 
     fun addToCart(productId: Int): String {
-        val added = database.addToCart(getCurrentUser().id, productId, 1)
+        val added = database.addToCart(requireUserId(), productId, 1)
         return if (added) {
             "Producto añadido al carrito"
         } else {
@@ -54,37 +83,31 @@ class StoreController(context: Context) {
     }
 
     fun increaseCartItem(productId: Int): String {
-        val added = database.addToCart(getCurrentUser().id, productId, 1)
+        val added = database.addToCart(requireUserId(), productId, 1)
         return if (added) "Cantidad actualizada" else "Has alcanzado el stock máximo"
     }
 
     fun decreaseCartItem(productId: Int) {
         val current = getCart().firstOrNull { it.productId == productId } ?: return
-        database.updateCartQuantity(getCurrentUser().id, productId, current.quantity - 1)
+        database.updateCartQuantity(requireUserId(), productId, current.quantity - 1)
     }
 
     fun removeCartItem(productId: Int) {
-        database.removeFromCart(getCurrentUser().id, productId)
+        database.removeFromCart(requireUserId(), productId)
     }
 
     fun checkout(
         buyerName: String,
         buyerEmail: String,
         paymentMethod: String,
-    ): CheckoutResult = database.checkout(getCurrentUser().id, buyerName, buyerEmail, paymentMethod)
+    ): CheckoutResult = database.checkout(requireUserId(), buyerName, buyerEmail, paymentMethod)
 
-    fun getOrders(): List<OrderWithItems> = database.getOrders(getCurrentUser().id)
+    fun getOrders(): List<OrderWithItems> = database.getOrders(requireUserId())
 
-    private fun ensureCurrentUser() {
-        if (!prefs.contains(KEY_CURRENT_USER_ID)) {
-            val defaultUser = database.getUserByRole("user") ?: return
-            prefs.edit().putInt(KEY_CURRENT_USER_ID, defaultUser.id).apply()
-        }
-    }
+    private fun requireUserId(): Int = getCurrentUser().id
 
     companion object {
         private const val PREFS_NAME = "store_session"
         private const val KEY_CURRENT_USER_ID = "current_user_id"
     }
 }
-

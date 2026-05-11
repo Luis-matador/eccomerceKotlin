@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="260dp"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="12dp"
+    android:background="@drawable/bg_card"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="130dp">
+
+        <ImageView
+            android:id="@+id/ivFeaturedProduct"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_hero_panel"
+            android:contentDescription="@string/product_image_desc"
+            android:padding="16dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_product_placeholder" />
+
+        <ImageButton
+            android:id="@+id/btnFeaturedFavorite"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="end|top"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/favorite_toggle_desc"
+            android:src="@drawable/ic_heart_outline" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/tvFeaturedProductTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:textColor="@color/store_text_primary"
+        android:textSize="17sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvFeaturedProductMeta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="@color/store_text_secondary" />
+
+    <TextView
+        android:id="@+id/tvFeaturedProductPrice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/store_primary"
+        android:textSize="22sp"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/btnFeaturedAdd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:backgroundTint="@color/store_accent"
+        android:text="@string/add_to_cart" />
+</LinearLayout>
+

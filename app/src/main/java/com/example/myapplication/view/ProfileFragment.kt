@@ -65,16 +65,6 @@ class ProfileFragment : Fragment() {
         adminPanel = view.findViewById(R.id.layoutAdminPanel)
         spinnerProducts = view.findViewById(R.id.spinnerAdminProducts)
 
-        view.findViewById<Button>(R.id.btnSwitchUser).setOnClickListener {
-            controller().switchRole("user")
-            bindProfile()
-            (requireActivity() as MainActivity).refreshChrome(getString(R.string.menu_profile))
-        }
-        view.findViewById<Button>(R.id.btnSwitchAdmin).setOnClickListener {
-            controller().switchRole("admin")
-            bindProfile()
-            (requireActivity() as MainActivity).refreshChrome(getString(R.string.menu_profile))
-        }
         view.findViewById<Button>(R.id.btnChangeProfilePhoto).setOnClickListener {
             profileImagePicker.launch(arrayOf("image/*"))
         }
@@ -88,6 +78,9 @@ class ProfileFragment : Fragment() {
             } else {
                 showProductDialog(product)
             }
+        }
+        view.findViewById<Button>(R.id.btnLogout).setOnClickListener {
+            (requireActivity() as MainActivity).logout()
         }
 
         bindProfile()
@@ -212,4 +205,3 @@ class ProfileFragment : Fragment() {
         fun newInstance() = ProfileFragment()
     }
 }
-

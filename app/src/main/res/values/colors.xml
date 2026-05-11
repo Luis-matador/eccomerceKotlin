@@ -16,6 +16,10 @@
     <color name="store_text_secondary">#FF64748B</color>
     <color name="store_border">#FFD9E2F2</color>
     <color name="store_warning">#FFD97706</color>
+    <color name="store_danger">#FFE11D48</color>
+    <color name="store_hero_start">#FF173AEE</color>
+    <color name="store_hero_end">#FF051854</color>
+    <color name="store_input_bg">#FFF8FAFD</color>
     <color name="bottom_nav_selected">#1F4BFF</color>
     <color name="bottom_nav_unselected">#FF6B7280</color>
 </resources>

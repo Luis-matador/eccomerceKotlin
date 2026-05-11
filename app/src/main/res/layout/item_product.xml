@@ -6,6 +6,7 @@
     android:background="@drawable/bg_card"
     android:orientation="horizontal"
     android:padding="14dp">
+
     <ImageView
         android:id="@+id/ivProduct"
         android:layout_width="92dp"
@@ -13,23 +14,42 @@
         android:contentDescription="@string/product_image_desc"
         android:scaleType="centerCrop"
         android:src="@drawable/ic_product_placeholder" />
+
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:layout_weight="1"
         android:orientation="vertical">
-        <TextView
-            android:id="@+id/tvFeatured"
-            android:layout_width="wrap_content"
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_featured_chip"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="4dp"
-            android:text="@string/featured_badge"
-            android:textColor="@color/store_accent"
-            android:textStyle="bold"
-            android:visibility="gone" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvFeatured"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_featured_chip"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:text="@string/featured_badge"
+                android:textColor="@color/store_accent"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <ImageButton
+                android:id="@+id/btnFavoriteProduct"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="8dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="@string/favorite_toggle_desc"
+                android:src="@drawable/ic_heart_outline" />
+        </LinearLayout>
+
         <TextView
             android:id="@+id/tvProductTitle"
             android:layout_width="match_parent"
@@ -38,6 +58,7 @@
             android:textColor="@color/store_text_primary"
             android:textSize="17sp"
             android:textStyle="bold" />
+
         <TextView
             android:id="@+id/tvProductMeta"
             android:layout_width="match_parent"
@@ -45,6 +66,7 @@
             android:layout_marginTop="4dp"
             android:textColor="@color/store_text_secondary"
             android:textSize="13sp" />
+
         <TextView
             android:id="@+id/tvProductPrice"
             android:layout_width="match_parent"
@@ -53,6 +75,7 @@
             android:textColor="@color/store_primary"
             android:textSize="20sp"
             android:textStyle="bold" />
+
         <TextView
             android:id="@+id/tvProductStock"
             android:layout_width="wrap_content"
@@ -62,17 +85,20 @@
             android:paddingHorizontal="10dp"
             android:paddingVertical="4dp"
             android:textColor="@color/store_text_secondary" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:orientation="horizontal">
+
             <Button
                 android:id="@+id/btnOpenProduct"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/view_product" />
+
             <Button
                 android:id="@+id/btnAddProduct"
                 android:layout_width="0dp"

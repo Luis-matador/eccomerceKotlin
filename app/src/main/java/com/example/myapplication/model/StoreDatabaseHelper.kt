@@ -18,7 +18,8 @@ class StoreDatabaseHelper(context: Context) :
             CREATE TABLE users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
-                email TEXT NOT NULL,
+                email TEXT NOT NULL UNIQUE,
+                password TEXT NOT NULL,
                 role TEXT NOT NULL,
                 photo_uri TEXT
             )
@@ -37,6 +38,17 @@ class StoreDatabaseHelper(context: Context) :
                 stock INTEGER NOT NULL,
                 image_uri TEXT,
                 featured INTEGER NOT NULL DEFAULT 0
+            )
+            """.trimIndent(),
+        )
+
+        db.execSQL(
+            """
+            CREATE TABLE favorites (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                product_id INTEGER NOT NULL,
+                UNIQUE(user_id, product_id)
             )
             """.trimIndent(),
         )
@@ -90,16 +102,95 @@ class StoreDatabaseHelper(context: Context) :
         db.execSQL("DROP TABLE IF EXISTS order_items")
         db.execSQL("DROP TABLE IF EXISTS orders")
         db.execSQL("DROP TABLE IF EXISTS cart_items")
+        db.execSQL("DROP TABLE IF EXISTS favorites")
         db.execSQL("DROP TABLE IF EXISTS products")
         db.execSQL("DROP TABLE IF EXISTS users")
         onCreate(db)
     }
 
-    fun getProducts(): List<Product> {
+    fun login(email: String, password: String): User? {
+        readableDatabase.rawQuery(
+            "SELECT id, name, email, role, photo_uri FROM users WHERE email = ? AND password = ? LIMIT 1",
+            arrayOf(email.trim(), password),
+        ).use { cursor ->
+            return if (cursor.moveToFirst()) {
+                User(
+                    id = cursor.getInt(0),
+                    name = cursor.getString(1),
+                    email = cursor.getString(2),
+                    role = cursor.getString(3),
+                    photoUri = cursor.getString(4),
+                )
+            } else {
+                null
+            }
+        }
+    }
+
+    fun registerUser(name: String, email: String, password: String): AuthResult {
+        if (name.isBlank() || email.isBlank() || password.isBlank()) {
+            return AuthResult(false, "Completa todos los campos")
+        }
+        if (!email.contains("@")) {
+            return AuthResult(false, "Correo no válido")
+        }
+        if (password.length < 4) {
+            return AuthResult(false, "La contraseña debe tener al menos 4 caracteres")
+        }
+        if (findUserByEmail(email) != null) {
+            return AuthResult(false, "Ese correo ya está registrado")
+        }
+
+        val values = ContentValues().apply {
+            put("name", name.trim())
+            put("email", email.trim().lowercase())
+            put("password", password)
+            put("role", "user")
+        }
+        val userId = writableDatabase.insert("users", null, values).toInt()
+        val user = getUserById(userId)
+        return AuthResult(true, "Cuenta creada correctamente", user)
+    }
+
+    fun getProducts(
+        userId: Int,
+        query: String = "",
+        category: String? = null,
+        favoritesOnly: Boolean = false,
+    ): List<Product> {
+        val where = mutableListOf<String>()
+        val args = mutableListOf<String>()
+        where += "1=1"
+        args += userId.toString()
+
+        if (query.isNotBlank()) {
+            where += "(LOWER(p.title) LIKE ? OR LOWER(p.platform) LIKE ? OR LOWER(p.category) LIKE ?)"
+            val wildcard = "%${query.trim().lowercase()}%"
+            args += wildcard
+            args += wildcard
+            args += wildcard
+        }
+
+        if (!category.isNullOrBlank() && category != ALL_CATEGORIES) {
+            where += "p.category = ?"
+            args += category
+        }
+
+        if (favoritesOnly) {
+            where += "f.id IS NOT NULL"
+        }
+
         val products = mutableListOf<Product>()
         readableDatabase.rawQuery(
-            "SELECT id, title, platform, category, description, price, stock, image_uri, featured FROM products ORDER BY featured DESC, title ASC",
-            null,
+            """
+            SELECT p.id, p.title, p.platform, p.category, p.description, p.price, p.stock, p.image_uri, p.featured,
+                   CASE WHEN f.id IS NULL THEN 0 ELSE 1 END AS favorite
+            FROM products p
+            LEFT JOIN favorites f ON f.product_id = p.id AND f.user_id = ?
+            WHERE ${where.joinToString(" AND ")}
+            ORDER BY p.featured DESC, p.title ASC
+            """.trimIndent(),
+            args.toTypedArray(),
         ).use { cursor ->
             while (cursor.moveToNext()) {
                 products += Product(
@@ -112,34 +203,31 @@ class StoreDatabaseHelper(context: Context) :
                     stock = cursor.getInt(6),
                     imageUri = cursor.getString(7),
                     featured = cursor.getInt(8) == 1,
+                    isFavorite = cursor.getInt(9) == 1,
                 )
             }
         }
         return products
     }
 
-    fun getProduct(productId: Int): Product? {
+    fun getFeaturedProducts(userId: Int, limit: Int = 5): List<Product> =
+        getProducts(userId).filter { it.featured }.take(limit)
+
+    fun getCategories(): List<String> {
+        val categories = mutableListOf<String>()
         readableDatabase.rawQuery(
-            "SELECT id, title, platform, category, description, price, stock, image_uri, featured FROM products WHERE id = ?",
-            arrayOf(productId.toString()),
+            "SELECT DISTINCT category FROM products ORDER BY category ASC",
+            null,
         ).use { cursor ->
-            return if (cursor.moveToFirst()) {
-                Product(
-                    id = cursor.getInt(0),
-                    title = cursor.getString(1),
-                    platform = cursor.getString(2),
-                    category = cursor.getString(3),
-                    description = cursor.getString(4),
-                    price = cursor.getDouble(5),
-                    stock = cursor.getInt(6),
-                    imageUri = cursor.getString(7),
-                    featured = cursor.getInt(8) == 1,
-                )
-            } else {
-                null
+            while (cursor.moveToNext()) {
+                categories += cursor.getString(0)
             }
         }
+        return categories
     }
+
+    fun getProduct(productId: Int, userId: Int): Product? =
+        getProducts(userId).firstOrNull { it.id == productId }
 
     fun saveProduct(product: Product): Product {
         val values = ContentValues().apply {
@@ -160,7 +248,7 @@ class StoreDatabaseHelper(context: Context) :
             db.update("products", values, "id = ?", arrayOf(product.id.toString()))
             product.id
         }
-        return getProduct(productId) ?: product.copy(id = productId)
+        return getProduct(productId, ADMIN_USER_ID) ?: product.copy(id = productId)
     }
 
     fun getUserById(userId: Int): User? {
@@ -182,30 +270,47 @@ class StoreDatabaseHelper(context: Context) :
         }
     }
 
-    fun getUserByRole(role: String): User? {
-        readableDatabase.rawQuery(
-            "SELECT id, name, email, role, photo_uri FROM users WHERE role = ? LIMIT 1",
-            arrayOf(role),
-        ).use { cursor ->
-            return if (cursor.moveToFirst()) {
-                User(
-                    id = cursor.getInt(0),
-                    name = cursor.getString(1),
-                    email = cursor.getString(2),
-                    role = cursor.getString(3),
-                    photoUri = cursor.getString(4),
-                )
-            } else {
-                null
-            }
-        }
-    }
-
     fun updateUserPhoto(userId: Int, photoUri: String?) {
         val values = ContentValues().apply {
             put("photo_uri", photoUri)
         }
         writableDatabase.update("users", values, "id = ?", arrayOf(userId.toString()))
+    }
+
+    fun toggleFavorite(userId: Int, productId: Int): Boolean {
+        if (isFavorite(userId, productId)) {
+            writableDatabase.delete(
+                "favorites",
+                "user_id = ? AND product_id = ?",
+                arrayOf(userId.toString(), productId.toString()),
+            )
+            return false
+        }
+
+        val values = ContentValues().apply {
+            put("user_id", userId)
+            put("product_id", productId)
+        }
+        writableDatabase.insert("favorites", null, values)
+        return true
+    }
+
+    fun isFavorite(userId: Int, productId: Int): Boolean {
+        readableDatabase.rawQuery(
+            "SELECT id FROM favorites WHERE user_id = ? AND product_id = ? LIMIT 1",
+            arrayOf(userId.toString(), productId.toString()),
+        ).use { cursor ->
+            return cursor.moveToFirst()
+        }
+    }
+
+    fun getFavoritesCount(userId: Int): Int {
+        readableDatabase.rawQuery(
+            "SELECT COUNT(*) FROM favorites WHERE user_id = ?",
+            arrayOf(userId.toString()),
+        ).use { cursor ->
+            return if (cursor.moveToFirst()) cursor.getInt(0) else 0
+        }
     }
 
     fun getCartLines(userId: Int): List<CartLine> {
@@ -236,7 +341,7 @@ class StoreDatabaseHelper(context: Context) :
     }
 
     fun addToCart(userId: Int, productId: Int, amount: Int = 1): Boolean {
-        val product = getProduct(productId) ?: return false
+        val product = getProduct(productId, userId) ?: return false
         if (product.stock <= 0) return false
 
         val currentQty = getCartQuantity(userId, productId)
@@ -267,7 +372,7 @@ class StoreDatabaseHelper(context: Context) :
             removeFromCart(userId, productId)
             return
         }
-        val product = getProduct(productId) ?: return
+        val product = getProduct(productId, userId) ?: return
         val safeQty = quantity.coerceAtMost(product.stock)
         val values = ContentValues().apply {
             put("quantity", safeQty)
@@ -323,7 +428,7 @@ class StoreDatabaseHelper(context: Context) :
         }
 
         for (line in cart) {
-            val product = getProduct(line.productId) ?: return CheckoutResult(false, "Un producto ya no está disponible")
+            val product = getProduct(line.productId, userId) ?: return CheckoutResult(false, "Un producto ya no está disponible")
             if (product.stock < line.quantity) {
                 return CheckoutResult(false, "No hay stock suficiente para ${line.title}")
             }
@@ -427,9 +532,28 @@ class StoreDatabaseHelper(context: Context) :
         }
     }
 
+    private fun findUserByEmail(email: String): User? {
+        readableDatabase.rawQuery(
+            "SELECT id, name, email, role, photo_uri FROM users WHERE LOWER(email) = ? LIMIT 1",
+            arrayOf(email.trim().lowercase()),
+        ).use { cursor ->
+            return if (cursor.moveToFirst()) {
+                User(
+                    id = cursor.getInt(0),
+                    name = cursor.getString(1),
+                    email = cursor.getString(2),
+                    role = cursor.getString(3),
+                    photoUri = cursor.getString(4),
+                )
+            } else {
+                null
+            }
+        }
+    }
+
     private fun seedInitialData(db: SQLiteDatabase) {
-        insertUser(db, "Demo Buyer", "buyer@g2a.local", "user")
-        insertUser(db, "Admin Store", "admin@g2a.local", "admin")
+        insertUser(db, "Demo Buyer", "buyer@g2a.local", "1234", "user")
+        insertUser(db, "Admin Store", "admin@g2a.local", "admin123", "admin")
 
         insertProduct(
             db,
@@ -464,6 +588,7 @@ class StoreDatabaseHelper(context: Context) :
                 description = "Licencia oficial para jugar en Java y Bedrock. Entrega instantánea con clave segura.",
                 price = 19.99,
                 stock = 22,
+                featured = true,
             ),
         )
         insertProduct(
@@ -499,12 +624,24 @@ class StoreDatabaseHelper(context: Context) :
                 stock = 30,
             ),
         )
+        insertProduct(
+            db,
+            Product(
+                title = "Nintendo eShop 25€",
+                platform = "Nintendo Switch",
+                category = "Gift Cards",
+                description = "Saldo digital para Nintendo eShop, perfecto para recargas rápidas y seguras.",
+                price = 23.95,
+                stock = 18,
+            ),
+        )
     }
 
-    private fun insertUser(db: SQLiteDatabase, name: String, email: String, role: String) {
+    private fun insertUser(db: SQLiteDatabase, name: String, email: String, password: String, role: String) {
         val values = ContentValues().apply {
             put("name", name)
-            put("email", email)
+            put("email", email.lowercase())
+            put("password", password)
             put("role", role)
         }
         db.insert("users", null, values)
@@ -544,8 +681,9 @@ class StoreDatabaseHelper(context: Context) :
     }
 
     companion object {
+        const val ALL_CATEGORIES = "Todas"
         private const val DATABASE_NAME = "g2a_store.db"
-        private const val DATABASE_VERSION = 2
+        private const val DATABASE_VERSION = 3
+        private const val ADMIN_USER_ID = 2
     }
 }
-

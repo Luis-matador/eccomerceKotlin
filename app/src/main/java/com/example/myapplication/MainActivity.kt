@@ -1,14 +1,17 @@
 package com.example.myapplication
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import com.example.myapplication.controller.StoreController
 import com.example.myapplication.databinding.ActivityMainBinding
+import com.example.myapplication.view.AuthFragment
 import com.example.myapplication.view.CartFragment
 import com.example.myapplication.view.CatalogFragment
 import com.example.myapplication.view.CheckoutFragment
+import com.example.myapplication.view.FavoritesFragment
 import com.example.myapplication.view.OrdersFragment
 import com.example.myapplication.view.ProductDetailFragment
 import com.example.myapplication.view.ProfileFragment
@@ -26,24 +29,28 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         storeController = StoreController(this)
-
         setSupportActionBar(binding.toolbar)
+
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_catalog -> {
-                    showRootFragment(CatalogFragment.newInstance())
+                    showRootFragment(CatalogFragment.newInstance(), getString(R.string.menu_catalog))
+                    true
+                }
+                R.id.nav_favorites -> {
+                    showRootFragment(FavoritesFragment.newInstance(), getString(R.string.menu_favorites))
                     true
                 }
                 R.id.nav_cart -> {
-                    showRootFragment(CartFragment.newInstance())
+                    showRootFragment(CartFragment.newInstance(), getString(R.string.menu_cart))
                     true
                 }
                 R.id.nav_orders -> {
-                    showRootFragment(OrdersFragment.newInstance())
+                    showRootFragment(OrdersFragment.newInstance(), getString(R.string.menu_orders))
                     true
                 }
                 R.id.nav_profile -> {
-                    showRootFragment(ProfileFragment.newInstance())
+                    showRootFragment(ProfileFragment.newInstance(), getString(R.string.menu_profile))
                     true
                 }
                 else -> false
@@ -51,10 +58,39 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (savedInstanceState == null) {
-            binding.bottomNavigation.selectedItemId = R.id.nav_catalog
+            if (storeController.isLoggedIn()) {
+                showAuthenticatedShell()
+            } else {
+                showAuthScreen()
+            }
         } else {
-            refreshChrome()
+            if (storeController.isLoggedIn()) {
+                binding.bottomNavigation.visibility = View.VISIBLE
+                refreshChrome()
+            } else {
+                binding.bottomNavigation.visibility = View.GONE
+                refreshChrome(getString(R.string.auth_title))
+            }
         }
+    }
+
+    fun onAuthSuccess() {
+        showAuthenticatedShell()
+    }
+
+    fun showAuthScreen() {
+        supportFragmentManager.popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        binding.bottomNavigation.visibility = View.GONE
+        supportActionBar?.title = getString(R.string.app_name)
+        supportActionBar?.subtitle = getString(R.string.auth_toolbar_subtitle)
+        supportFragmentManager.commit {
+            replace(R.id.fragmentContainer, AuthFragment.newInstance())
+        }
+    }
+
+    fun logout() {
+        storeController.logout()
+        showAuthScreen()
     }
 
     fun openProductDetail(productId: Int) {
@@ -62,7 +98,7 @@ class MainActivity : AppCompatActivity() {
             replace(R.id.fragmentContainer, ProductDetailFragment.newInstance(productId))
             addToBackStack("product_detail")
         }
-        refreshChrome("Ficha de producto")
+        refreshChrome(getString(R.string.product_detail_title))
     }
 
     fun openCheckout() {
@@ -70,32 +106,42 @@ class MainActivity : AppCompatActivity() {
             replace(R.id.fragmentContainer, CheckoutFragment.newInstance())
             addToBackStack("checkout")
         }
-        refreshChrome("Pago seguro")
+        refreshChrome(getString(R.string.checkout_title))
     }
 
     fun navigateToOrdersAfterPurchase() {
-        supportFragmentManager.popBackStack(null, 1)
+        supportFragmentManager.popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
         binding.bottomNavigation.selectedItemId = R.id.nav_orders
     }
 
     fun refreshChrome(customTitle: String? = null) {
-        val user = storeController.getCurrentUser()
-        val cartCount = storeController.getCartCount()
+        val user = storeController.getCurrentUserOrNull()
+        if (user == null) {
+            supportActionBar?.title = customTitle ?: getString(R.string.app_name)
+            supportActionBar?.subtitle = getString(R.string.auth_toolbar_subtitle)
+            return
+        }
         supportActionBar?.title = customTitle ?: getString(R.string.app_name)
         supportActionBar?.subtitle = getString(
             R.string.toolbar_subtitle,
             user.name,
             user.role.uppercase(),
-            cartCount,
+            storeController.getCartCount(),
+            storeController.getFavoritesCount(),
         )
     }
 
-    private fun showRootFragment(fragment: Fragment) {
-        supportFragmentManager.popBackStack(null, 1)
+    private fun showAuthenticatedShell() {
+        binding.bottomNavigation.visibility = View.VISIBLE
+        refreshChrome(getString(R.string.menu_catalog))
+        binding.bottomNavigation.selectedItemId = R.id.nav_catalog
+    }
+
+    private fun showRootFragment(fragment: Fragment, title: String) {
+        supportFragmentManager.popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
         supportFragmentManager.commit {
             replace(R.id.fragmentContainer, fragment)
         }
-        refreshChrome()
+        refreshChrome(title)
     }
 }
-

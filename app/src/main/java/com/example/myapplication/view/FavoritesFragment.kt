@@ -8,7 +8,6 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.Spinner
-import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
@@ -18,20 +17,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.MainActivity
 import com.example.myapplication.R
 import com.example.myapplication.util.showIf
-import com.example.myapplication.view.adapter.FeaturedProductAdapter
 import com.example.myapplication.view.adapter.ProductAdapter
 
-class CatalogFragment : Fragment() {
+class FavoritesFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
-    private lateinit var featuredRecycler: RecyclerView
     private lateinit var emptyView: TextView
-    private lateinit var helperView: TextView
     private lateinit var searchView: EditText
     private lateinit var categorySpinner: Spinner
-    private lateinit var favoritesSwitch: Switch
     private lateinit var adapter: ProductAdapter
-    private lateinit var featuredAdapter: FeaturedProductAdapter
     private var selectedCategory: String = "Todas"
     private var searchText: String = ""
 
@@ -39,24 +33,21 @@ class CatalogFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View = inflater.inflate(R.layout.fragment_catalog, container, false)
+    ): View = inflater.inflate(R.layout.fragment_favorites, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        recyclerView = view.findViewById(R.id.recyclerProducts)
-        featuredRecycler = view.findViewById(R.id.recyclerFeaturedProducts)
-        emptyView = view.findViewById(R.id.tvEmptyCatalog)
-        helperView = view.findViewById(R.id.tvCatalogHelper)
-        searchView = view.findViewById(R.id.etCatalogSearch)
-        categorySpinner = view.findViewById(R.id.spinnerCategory)
-        favoritesSwitch = view.findViewById(R.id.switchOnlyFavorites)
+        recyclerView = view.findViewById(R.id.recyclerFavorites)
+        emptyView = view.findViewById(R.id.tvEmptyFavorites)
+        searchView = view.findViewById(R.id.etFavoritesSearch)
+        categorySpinner = view.findViewById(R.id.spinnerFavoritesCategory)
 
         adapter = ProductAdapter(
             items = emptyList(),
             onOpen = { product -> (requireActivity() as MainActivity).openProductDetail(product.id) },
             onAdd = { product ->
                 Toast.makeText(requireContext(), controller().addToCart(product.id), Toast.LENGTH_SHORT).show()
-                (requireActivity() as MainActivity).refreshChrome(getString(R.string.menu_catalog))
+                (requireActivity() as MainActivity).refreshChrome(getString(R.string.menu_favorites))
             },
             onToggleFavorite = { product ->
                 val active = controller().toggleFavorite(product.id)
@@ -65,36 +56,20 @@ class CatalogFragment : Fragment() {
                     if (active) R.string.favorite_added else R.string.favorite_removed,
                     Toast.LENGTH_SHORT,
                 ).show()
-                renderCatalog()
-            },
-        )
-
-        featuredAdapter = FeaturedProductAdapter(
-            items = emptyList(),
-            onOpen = { product -> (requireActivity() as MainActivity).openProductDetail(product.id) },
-            onAdd = { product ->
-                Toast.makeText(requireContext(), controller().addToCart(product.id), Toast.LENGTH_SHORT).show()
-                (requireActivity() as MainActivity).refreshChrome(getString(R.string.menu_catalog))
-            },
-            onToggleFavorite = { product ->
-                controller().toggleFavorite(product.id)
-                renderCatalog()
+                renderFavorites()
             },
         )
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
-        featuredRecycler.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        featuredRecycler.adapter = featuredAdapter
-
         setupFilters()
-        renderCatalog()
+        renderFavorites()
     }
 
     override fun onResume() {
         super.onResume()
-        (requireActivity() as MainActivity).refreshChrome(getString(R.string.menu_catalog))
-        if (this::adapter.isInitialized) renderCatalog()
+        (requireActivity() as MainActivity).refreshChrome(getString(R.string.menu_favorites))
+        if (this::adapter.isInitialized) renderFavorites()
     }
 
     private fun setupFilters() {
@@ -107,38 +82,28 @@ class CatalogFragment : Fragment() {
         categorySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 selectedCategory = categories[position]
-                renderCatalog()
+                renderFavorites()
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
         }
         searchView.doAfterTextChanged {
             searchText = it?.toString().orEmpty()
-            renderCatalog()
+            renderFavorites()
         }
-        favoritesSwitch.setOnCheckedChangeListener { _, _ -> renderCatalog() }
     }
 
-    private fun renderCatalog() {
-        val products = controller().getProducts(searchText, selectedCategory, favoritesSwitch.isChecked)
-        val featuredProducts = controller().getFeaturedProducts()
-        adapter.update(products)
-        featuredAdapter.update(featuredProducts)
-        helperView.text = getString(
-            if (controller().getCurrentUser().role == "admin") {
-                R.string.catalog_header_admin
-            } else {
-                R.string.catalog_header_user
-            },
-        )
-        emptyView.showIf(products.isEmpty())
-        recyclerView.showIf(products.isNotEmpty())
-        featuredRecycler.showIf(featuredProducts.isNotEmpty())
+    private fun renderFavorites() {
+        val items = controller().getProducts(searchText, selectedCategory, favoritesOnly = true)
+        adapter.update(items)
+        emptyView.showIf(items.isEmpty())
+        recyclerView.showIf(items.isNotEmpty())
     }
 
     private fun controller() = (requireActivity() as MainActivity).storeController
 
     companion object {
-        fun newInstance() = CatalogFragment()
+        fun newInstance() = FavoritesFragment()
     }
 }
+

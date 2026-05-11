@@ -1,23 +1,26 @@
 # G2A Kotlin Store
 
-App Android en Kotlin con arquitectura MVC básica para simular un ecommerce de juegos, keys y gift cards.
+App Android en Kotlin con arquitectura MVC básica para simular un ecommerce de juegos, keys y gift cards con look más cercano a un marketplace gaming.
 
 ## Funcionalidades
 
 - Catálogo de productos cargado desde SQLite
+- Login real con registro de usuarios en SQLite
+- Búsqueda por texto y filtros por categoría
+- Lista de favoritos y marcado con corazón
+- Carrusel de productos destacados
 - Ficha de producto
 - Carrito con añadir, quitar, incrementar y decrementar cantidad
 - Checkout simulado
 - Generación de claves digitales al comprar
 - Historial de pedidos
-- Cambio entre modo usuario y modo admin
 - Subida de foto de perfil
 - Alta/edición de productos por parte del admin, incluyendo imagen
 
 ## Arquitectura
 
 - **Modelo**: `Product`, `CartLine`, `Order`, `OrderItem`, `User`, `StoreDatabaseHelper`
-- **Vista**: fragments de catálogo, ficha, carrito, checkout, pedidos y perfil
+- **Vista**: fragments de auth, catálogo, favoritos, ficha, carrito, checkout, pedidos y perfil
 - **Controlador**: `StoreController`
 
 ## Base de datos
@@ -38,8 +41,8 @@ APK debug generado en:
 
 ## Cuentas demo
 
-- Usuario: `buyer@g2a.local`
-- Admin: `admin@g2a.local`
+- Usuario: `buyer@g2a.local` / `1234`
+- Admin: `admin@g2a.local` / `admin123`
 
-El cambio entre ambos perfiles se hace desde la pestaña **Perfil**.
+El login y registro se realizan al abrir la app. El panel de administración aparece automáticamente al iniciar sesión como `admin`.
 

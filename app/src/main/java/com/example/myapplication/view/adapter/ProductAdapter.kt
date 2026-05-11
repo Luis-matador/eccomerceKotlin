@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -17,6 +18,7 @@ class ProductAdapter(
     private var items: List<Product>,
     private val onOpen: (Product) -> Unit,
     private val onAdd: (Product) -> Unit,
+    private val onToggleFavorite: (Product) -> Unit,
 ) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
@@ -44,6 +46,7 @@ class ProductAdapter(
         private val featured = itemView.findViewById<TextView>(R.id.tvFeatured)
         private val openButton = itemView.findViewById<Button>(R.id.btnOpenProduct)
         private val addButton = itemView.findViewById<Button>(R.id.btnAddProduct)
+        private val favoriteButton = itemView.findViewById<ImageButton>(R.id.btnFavoriteProduct)
 
         fun bind(product: Product) {
             image.loadStoreImage(product.imageUri)
@@ -53,9 +56,13 @@ class ProductAdapter(
             stock.text = itemView.context.getString(R.string.stock_format, product.stock)
             featured.showIf(product.featured)
             addButton.isEnabled = product.stock > 0
+            favoriteButton.setImageResource(
+                if (product.isFavorite) R.drawable.ic_heart_filled else R.drawable.ic_heart_outline,
+            )
             openButton.setOnClickListener { onOpen(product) }
             addButton.setOnClickListener { onAdd(product) }
+            favoriteButton.setOnClickListener { onToggleFavorite(product) }
+            itemView.setOnClickListener { onOpen(product) }
         }
     }
 }
-

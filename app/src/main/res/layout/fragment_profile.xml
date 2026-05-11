@@ -3,23 +3,27 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_card"
             android:orientation="vertical"
             android:padding="16dp">
+
             <ImageView
                 android:id="@+id/ivProfile"
                 android:layout_width="88dp"
                 android:layout_height="88dp"
                 android:contentDescription="@string/profile_image_desc"
                 android:src="@drawable/ic_avatar_placeholder" />
+
             <TextView
                 android:id="@+id/tvProfileName"
                 android:layout_width="match_parent"
@@ -28,12 +32,14 @@
                 android:textColor="@color/store_text_primary"
                 android:textSize="22sp"
                 android:textStyle="bold" />
+
             <TextView
                 android:id="@+id/tvProfileEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:textColor="@color/store_text_secondary" />
+
             <TextView
                 android:id="@+id/tvProfileRole"
                 android:layout_width="wrap_content"
@@ -43,38 +49,29 @@
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="5dp"
                 android:textColor="@color/store_text_secondary" />
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:text="@string/profile_help"
                 android:textColor="@color/store_text_secondary" />
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                android:orientation="horizontal">
-                <Button
-                    android:id="@+id/btnSwitchUser"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/switch_user" />
-                <Button
-                    android:id="@+id/btnSwitchAdmin"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_weight="1"
-                    android:text="@string/switch_admin" />
-            </LinearLayout>
+
             <Button
                 android:id="@+id/btnChangeProfilePhoto"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="12dp"
                 android:text="@string/change_profile_photo" />
+
+            <Button
+                android:id="@+id/btnLogout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/logout" />
         </LinearLayout>
+
         <LinearLayout
             android:id="@+id/layoutAdminPanel"
             android:layout_width="match_parent"
@@ -84,6 +81,7 @@
             android:orientation="vertical"
             android:padding="16dp"
             android:visibility="gone">
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -91,12 +89,14 @@
                 android:textColor="@color/store_text_primary"
                 android:textSize="20sp"
                 android:textStyle="bold" />
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="@string/admin_panel_desc"
                 android:textColor="@color/store_text_secondary" />
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -104,17 +104,20 @@
                 android:text="@string/select_product"
                 android:textColor="@color/store_text_primary"
                 android:textStyle="bold" />
+
             <Spinner
                 android:id="@+id/spinnerAdminProducts"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:background="@drawable/bg_card" />
+                android:background="@drawable/bg_input" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:orientation="horizontal">
+
                 <Button
                     android:id="@+id/btnCreateProduct"
                     android:layout_width="0dp"
@@ -122,6 +125,7 @@
                     android:layout_weight="1"
                     android:backgroundTint="@color/store_accent"
                     android:text="@string/create_product" />
+
                 <Button
                     android:id="@+id/btnEditProduct"
                     android:layout_width="0dp"
