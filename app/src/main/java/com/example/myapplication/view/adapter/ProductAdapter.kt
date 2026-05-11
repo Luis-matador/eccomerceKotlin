@@ -1,0 +1,61 @@
+package com.example.myapplication.view.adapter
+
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+import com.example.myapplication.R
+import com.example.myapplication.model.Product
+import com.example.myapplication.util.loadStoreImage
+import com.example.myapplication.util.showIf
+import com.example.myapplication.util.toEuroString
+
+class ProductAdapter(
+    private var items: List<Product>,
+    private val onOpen: (Product) -> Unit,
+    private val onAdd: (Product) -> Unit,
+) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_product, parent, false)
+        return ProductViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
+        holder.bind(items[position])
+    }
+
+    override fun getItemCount(): Int = items.size
+
+    fun update(newItems: List<Product>) {
+        items = newItems
+        notifyDataSetChanged()
+    }
+
+    inner class ProductViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val image = itemView.findViewById<ImageView>(R.id.ivProduct)
+        private val title = itemView.findViewById<TextView>(R.id.tvProductTitle)
+        private val meta = itemView.findViewById<TextView>(R.id.tvProductMeta)
+        private val price = itemView.findViewById<TextView>(R.id.tvProductPrice)
+        private val stock = itemView.findViewById<TextView>(R.id.tvProductStock)
+        private val featured = itemView.findViewById<TextView>(R.id.tvFeatured)
+        private val openButton = itemView.findViewById<Button>(R.id.btnOpenProduct)
+        private val addButton = itemView.findViewById<Button>(R.id.btnAddProduct)
+
+        fun bind(product: Product) {
+            image.loadStoreImage(product.imageUri)
+            title.text = product.title
+            meta.text = itemView.context.getString(R.string.product_meta_format, product.platform, product.category)
+            price.text = product.price.toEuroString()
+            stock.text = itemView.context.getString(R.string.stock_format, product.stock)
+            featured.showIf(product.featured)
+            addButton.isEnabled = product.stock > 0
+            openButton.setOnClickListener { onOpen(product) }
+            addButton.setOnClickListener { onAdd(product) }
+        }
+    }
+}
+
