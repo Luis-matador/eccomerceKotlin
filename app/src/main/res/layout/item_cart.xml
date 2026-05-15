@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:background="@drawable/bg_card"
+    android:orientation="horizontal"
+    android:padding="12dp">
+    <ImageView
+        android:id="@+id/ivCartProduct"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:contentDescription="@string/product_image_desc"
+        android:src="@drawable/ic_product_placeholder" />
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/tvCartTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/store_text_primary"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/tvCartMeta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/store_text_secondary" />
+        <TextView
+            android:id="@+id/tvCartPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/store_primary"
+            android:textStyle="bold" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/btnQtyMinus"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:text="-" />
+            <TextView
+                android:id="@+id/tvCartQty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginHorizontal="12dp"
+                android:textColor="@color/store_text_primary"
+                android:textStyle="bold" />
+            <Button
+                android:id="@+id/btnQtyPlus"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:text="+" />
+        </LinearLayout>
+    </LinearLayout>
+    <Button
+        android:id="@+id/btnRemoveItem"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="X" />
+</LinearLayout>

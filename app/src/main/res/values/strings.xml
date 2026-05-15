@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">G2A Kotlin Store</string>
+    <string name="menu_catalog">Catálogo</string>
+    <string name="menu_favorites">Favoritos</string>
+    <string name="menu_cart">Carrito</string>
+    <string name="menu_orders">Pedidos</string>
+    <string name="menu_profile">Perfil</string>
+
+    <string name="toolbar_subtitle">%1$s · %2$s · %3$d en carrito · %4$d favoritos</string>
+    <string name="auth_toolbar_subtitle">Inicia sesión o crea tu cuenta para comprar claves y juegos</string>
+
+    <string name="catalog_title">Marketplace gaming instantáneo</string>
+    <string name="catalog_subtitle">Claves, juegos, gift cards y suscripciones con entrega inmediata.</string>
+    <string name="catalog_header_admin">Modo admin activo: crea productos, cambia imágenes y ajusta stock en tiempo real.</string>
+    <string name="catalog_header_user">Busca ofertas, filtra por categoría y guarda favoritos como en un marketplace tipo G2A.</string>
+    <string name="catalog_search_hint">Buscar juegos, plataformas o categorías</string>
+    <string name="favorites_switch">Solo favoritos</string>
+    <string name="sort_relevance">Ordenar: relevancia</string>
+    <string name="sort_price_asc">Precio: menor a mayor</string>
+    <string name="sort_price_desc">Precio: mayor a menor</string>
+    <string name="sort_popularity">Popularidad</string>
+    <string name="featured_section_title">Destacados de hoy</string>
+    <string name="empty_catalog">No hay productos que coincidan con esos filtros.</string>
+    <string name="empty_favorites">Todavía no tienes favoritos. Marca productos con el corazón para guardarlos.</string>
+    <string name="favorites_title">Tu lista de seguimiento</string>
+    <string name="favorites_subtitle">Recupera rápido los productos que te interesan y añádelos al carrito cuando quieras.</string>
+    <string name="featured_badge">TOP</string>
+    <string name="favorite_added">Añadido a favoritos</string>
+    <string name="favorite_removed">Eliminado de favoritos</string>
+    <string name="favorite_toggle_desc">Marcar favorito</string>
+
+    <string name="view_product">Ver ficha</string>
+    <string name="add_to_cart">Añadir</string>
+    <string name="buy_now">Comprar ahora</string>
+    <string name="product_meta_format">%1$s · %2$s</string>
+    <string name="stock_format">Stock: %1$d</string>
+    <string name="product_detail_title">Ficha de producto</string>
+    <string name="product_not_found">Producto no encontrado</string>
+    <string name="go_to_cart">Ir al carrito</string>
+    <string name="unavailable_product">Sin stock temporalmente</string>
+
+    <string name="empty_cart">Tu carrito está vacío. Añade alguna key o juego del catálogo.</string>
+    <string name="continue_shopping">Seguir comprando</string>
+    <string name="go_to_checkout">Ir a pagar</string>
+    <string name="total_format">Total: %1$s</string>
+    <string name="item_removed_from_cart">Producto eliminado del carrito</string>
+    <string name="cart_meta_format">%1$s · Stock %2$d</string>
+
+    <string name="checkout_title">Formulario de pago</string>
+    <string name="checkout_description">Simulación de checkout para compra digital. Al finalizar, se generan y guardan las claves en tus pedidos.</string>
+    <string name="buyer_name">Nombre del comprador</string>
+    <string name="buyer_email">Correo para recibir las claves</string>
+    <string name="payment_method">Método de pago</string>
+    <string name="confirm_purchase">Procesar compra</string>
+    <string name="required_field">Campo obligatorio</string>
+    <string name="invalid_email">Correo no válido</string>
+
+    <string name="empty_orders">Todavía no has comprado nada con esta cuenta.</string>
+    <string name="orders_title">Historial de pedidos</string>
+    <string name="order_detail_title">Detalle del pedido</string>
+    <string name="order_not_found">Pedido no encontrado</string>
+    <string name="order_detail_buyer_format">Comprador: %1$s · %2$s</string>
+    <string name="order_detail_item_meta">%1$s · Cantidad: %2$d</string>
+    <string name="order_detail_empty">Este pedido no tiene items asociados.</string>
+    <string name="order_number_format">Pedido #%1$d</string>
+    <string name="order_meta_format">%1$s · %2$s · %3$s</string>
+
+    <string name="profile_title">Perfil y administración</string>
+    <string name="role_format">Rol actual: %1$s</string>
+    <string name="change_profile_photo">Subir foto de perfil</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="profile_photo_updated">Foto de perfil actualizada</string>
+    <string name="admin_panel_title">Panel administrador</string>
+    <string name="admin_panel_desc">Desde aquí puedes crear, editar o eliminar productos del catálogo.</string>
+    <string name="create_product">Crear producto</string>
+    <string name="edit_product">Editar producto</string>
+    <string name="delete_product">Eliminar producto</string>
+    <string name="confirm_delete_product">¿Estás seguro de que quieres eliminar este producto?</string>
+    <string name="product_deleted">Producto eliminado correctamente</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="delete">Eliminar</string>
+    <string name="select_product">Producto a gestionar</string>
+    <string name="no_products_available">No hay productos disponibles</string>
+    <string name="save">Guardar</string>
+    <string name="complete_product_form">Completa todos los campos del producto</string>
+    <string name="product_saved">Producto guardado correctamente</string>
+    <string name="pick_product_image">Subir foto del producto</string>
+    <string name="product_title_hint">Título del producto</string>
+    <string name="product_platform_hint">Plataforma</string>
+    <string name="product_category_hint">Categoría</string>
+    <string name="product_price_hint">Precio</string>
+    <string name="product_stock_hint">Stock</string>
+    <string name="product_description_hint">Descripción</string>
+    <string name="featured_switch">Mostrar como destacado</string>
+    <string name="profile_help">Gestiona tu cuenta, cambia tu foto y, si eres admin, controla el catálogo completo.</string>
+    <string name="admin_only_hint">Inicia sesión como admin para gestionar productos.</string>
+
+    <string name="auth_title">Acceso a tu cuenta</string>
+    <string name="auth_headline">Compra y vende como en un marketplace gaming real</string>
+    <string name="auth_subtitle">Inicia sesión con una cuenta existente o crea una nueva para guardar favoritos, comprar claves y seguir pedidos.</string>
+    <string name="auth_name">Nombre</string>
+    <string name="auth_email">Correo</string>
+    <string name="auth_password">Contraseña</string>
+    <string name="login">Iniciar sesión</string>
+    <string name="register">Crear cuenta</string>
+    <string name="quick_admin_fill">Rellenar credenciales admin</string>
+    <string name="demo_credentials_title">Credenciales demo</string>
+    <string name="demo_credentials_body">Usuario: buyer@g2a.local / 1234&#10;Admin: admin@g2a.local / admin123</string>
+
+    <string name="product_image_desc">Imagen del producto</string>
+    <string name="profile_image_desc">Imagen del perfil</string>
+</resources>

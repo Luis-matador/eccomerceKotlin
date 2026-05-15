@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+    <TextView
+        android:id="@+id/tvEmptyCart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_card"
+        android:gravity="center"
+        android:padding="18dp"
+        android:text="@string/empty_cart"
+        android:textColor="@color/store_text_secondary"
+        android:visibility="gone" />
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerCart"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="8dp" />
+    <TextView
+        android:id="@+id/tvCartTotal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/store_text_primary"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/btnContinueShopping"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/continue_shopping" />
+        <Button
+            android:id="@+id/btnCheckout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/store_primary"
+            android:text="@string/go_to_checkout" />
+    </LinearLayout>
+</LinearLayout>
