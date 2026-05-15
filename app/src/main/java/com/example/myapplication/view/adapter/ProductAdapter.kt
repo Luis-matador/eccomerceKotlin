@@ -17,9 +17,11 @@ import com.example.myapplication.util.showIf
 import com.example.myapplication.util.toEuroString
 
 class ProductAdapter(
+    private val isAdmin: Boolean = false,
     private val onOpen: (Product) -> Unit,
     private val onAdd: (Product) -> Unit,
     private val onToggleFavorite: (Product) -> Unit,
+    private val onDelete: (Product) -> Unit = {},
 ) : ListAdapter<Product, ProductAdapter.ProductViewHolder>(DiffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
@@ -41,6 +43,7 @@ class ProductAdapter(
         private val openButton = itemView.findViewById<Button>(R.id.btnOpenProduct)
         private val addButton = itemView.findViewById<Button>(R.id.btnAddProduct)
         private val favoriteButton = itemView.findViewById<ImageButton>(R.id.btnFavoriteProduct)
+        private val deleteButton = itemView.findViewById<ImageButton>(R.id.btnDeleteProductItem)
 
         fun bind(product: Product) {
             image.loadStoreImage(product.imageUri)
@@ -53,9 +56,13 @@ class ProductAdapter(
             favoriteButton.setImageResource(
                 if (product.isFavorite) R.drawable.ic_heart_filled else R.drawable.ic_heart_outline,
             )
+            
+            deleteButton.showIf(isAdmin)
+            
             openButton.setOnClickListener { onOpen(product) }
             addButton.setOnClickListener { onAdd(product) }
             favoriteButton.setOnClickListener { onToggleFavorite(product) }
+            deleteButton.setOnClickListener { onDelete(product) }
             itemView.setOnClickListener { onOpen(product) }
         }
     }

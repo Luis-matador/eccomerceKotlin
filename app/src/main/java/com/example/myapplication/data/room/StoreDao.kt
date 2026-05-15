@@ -40,6 +40,9 @@ interface StoreDao {
     @Update
     fun updateProduct(product: ProductEntity)
 
+    @Query("DELETE FROM products WHERE id = :productId")
+    fun deleteProduct(productId: Int)
+
     @Query("SELECT product_id FROM favorites WHERE user_id = :userId")
     fun getFavoriteIds(userId: Int): List<Int>
 
@@ -116,4 +119,3 @@ interface StoreDao {
     @Query("SELECT * FROM order_items WHERE order_id = :orderId ORDER BY id ASC")
     fun getOrderItems(orderId: Int): List<OrderItemEntity>
 }
-

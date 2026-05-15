@@ -69,6 +69,10 @@ class StoreController(context: Context) {
 
     fun saveProduct(product: Product): Product = database.saveProduct(product)
 
+    fun deleteProduct(productId: Int) {
+        database.deleteProduct(productId)
+    }
+
     fun getCart(): List<CartLine> = database.getCartLines(requireUserId())
 
     fun getCartCount(): Int = database.getCartItemCount(requireUserId())

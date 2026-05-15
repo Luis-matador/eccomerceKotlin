@@ -1,5 +1,6 @@
 package com.example.myapplication.view
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapplication.MainActivity
 import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentCatalogBinding
+import com.example.myapplication.model.Product
 import com.example.myapplication.model.StoreSortOption
 import com.example.myapplication.util.showIf
 import com.example.myapplication.view.adapter.FeaturedProductAdapter
@@ -44,7 +46,10 @@ class CatalogFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val isAdmin = controller().getCurrentUserOrNull()?.role == "admin"
+
         adapter = ProductAdapter(
+            isAdmin = isAdmin,
             onOpen = { product -> (requireActivity() as MainActivity).openProductDetail(product.id) },
             onAdd = { product ->
                 Toast.makeText(requireContext(), controller().addToCart(product.id), Toast.LENGTH_SHORT).show()
@@ -59,6 +64,9 @@ class CatalogFragment : Fragment() {
                 ).show()
                 renderCatalog()
             },
+            onDelete = { product ->
+                showDeleteConfirmation(product)
+            }
         )
 
         featuredAdapter = FeaturedProductAdapter(
@@ -80,6 +88,19 @@ class CatalogFragment : Fragment() {
 
         setupFilters()
         renderCatalog()
+    }
+
+    private fun showDeleteConfirmation(product: Product) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.delete_product)
+            .setMessage(R.string.confirm_delete_product)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.delete) { _, _ ->
+                controller().deleteProduct(product.id)
+                Toast.makeText(requireContext(), R.string.product_deleted, Toast.LENGTH_SHORT).show()
+                renderCatalog()
+            }
+            .show()
     }
 
     override fun onResume() {

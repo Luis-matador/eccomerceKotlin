@@ -145,6 +145,10 @@ class StoreRepository private constructor(context: Context) {
         return getProduct(id, ADMIN_USER_ID) ?: product.copy(id = id)
     }
 
+    fun deleteProduct(productId: Int) {
+        dao.deleteProduct(productId)
+    }
+
     fun toggleFavorite(userId: Int, productId: Int): Boolean {
         val existing = dao.getFavoriteId(userId, productId)
         return if (existing != null) {
@@ -340,4 +344,3 @@ class StoreRepository private constructor(context: Context) {
             }
     }
 }
-

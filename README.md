@@ -43,6 +43,7 @@ La app está pensada como proyecto académico/técnico completo, con interfaz mo
 - panel administrador para:
   - crear productos
   - editar productos
+  - eliminar productos
   - subir foto del producto
   - cambiar precio, stock, categoría, descripción y destacado
 
@@ -393,10 +394,11 @@ Si el usuario es admin, también se muestra el panel administrador.
 
 Disponible al iniciar sesión como administrador.
 
-Permite:
+Permite desde el perfil:
 
 - crear productos
 - editar productos existentes
+- eliminar productos
 - subir imagen del producto
 - configurar:
   - título
@@ -406,6 +408,11 @@ Permite:
   - precio
   - stock
   - destacado
+
+Además, en el catálogo y favoritos, los administradores pueden:
+
+- eliminar productos directamente desde el botón de eliminar en cada item del RecyclerView
+- administrar productos sobre la marcha sin ir al panel de perfil
 
 ---
 

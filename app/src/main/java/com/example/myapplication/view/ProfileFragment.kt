@@ -68,11 +68,32 @@ class ProfileFragment : Fragment() {
                 showProductDialog(product)
             }
         }
+        binding.btnDeleteProduct.setOnClickListener {
+            val product = getAdminProducts().getOrNull(binding.spinnerAdminProducts.selectedItemPosition)
+            if (product == null) {
+                Toast.makeText(requireContext(), R.string.no_products_available, Toast.LENGTH_SHORT).show()
+            } else {
+                showDeleteConfirmation(product)
+            }
+        }
         binding.btnLogout.setOnClickListener {
             (requireActivity() as MainActivity).logout()
         }
 
         bindProfile()
+    }
+
+    private fun showDeleteConfirmation(product: Product) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.delete_product)
+            .setMessage(R.string.confirm_delete_product)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.delete) { _, _ ->
+                controller().deleteProduct(product.id)
+                Toast.makeText(requireContext(), R.string.product_deleted, Toast.LENGTH_SHORT).show()
+                bindProfile()
+            }
+            .show()
     }
 
     override fun onResume() {
